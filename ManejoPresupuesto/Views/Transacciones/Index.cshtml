@@ -1,0 +1,38 @@
+﻿@model IEnumerable<TransaccionCreacionViewModel>
+
+@{
+    ViewData["Title"] = "Transacciones";
+}
+
+<h1>Indice de transacciones</h1>
+<h5>
+    Transacciones realizadas.
+</h5>
+
+<a asp-action="Crear" class="btn btn-primary mb-3">Crear nuevo</a>
+
+<!--<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Acciones</th>
+            <th>Fecha Transaccion</th>
+            <th>Monto</th>
+            <th>Nota</th>
+        </tr>
+    </thead>
+    <tbody class="table-group-divider">
+        @* @foreach (var transaccion in Model)
+        {
+            <tr>
+                <td>
+                    <input type="hidden" value="@transaccion.Id" class="ids" />
+                    <a class="btn btn-primary" asp-action="Editar" asp-route-id="@transaccion.Id">Editar</a>
+                    <a class="btn btn-danger" asp-action="Borrar" asp-route-id="@transaccion.Id">Borrar</a>
+                </td>
+                <td>@transaccion.FechaTransaccion.ToString("dd/MM/yyyy")</td>
+                <td>@transaccion.Monto</td>
+                <td>@transaccion.Nota</td>
+            </tr>
+        } *@
+    </tbody>
+</table>-->

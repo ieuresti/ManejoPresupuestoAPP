@@ -13,17 +13,23 @@ namespace ManejoPresupuesto.Controllers
         private readonly IRepositorioTiposCuentas repositorioTiposCuentas;
         private readonly IServicioUsuarios servicioUsuarios;
         private readonly IRepositorioCuentas repositorioCuentas;
+        private readonly IRepositorioTransacciones repositorioTransacciones;
+        private readonly IServicioReportes servicioReportes;
 
         public CuentasController(
             IMapper mapper,
             IRepositorioTiposCuentas repositorioTiposCuentas,
             IServicioUsuarios servicioUsuarios,
-            IRepositorioCuentas repositorioCuentas)
+            IRepositorioCuentas repositorioCuentas,
+            IRepositorioTransacciones repositorioTransacciones,
+            IServicioReportes servicioReportes)
         {
             this.mapper = mapper;
             this.repositorioTiposCuentas = repositorioTiposCuentas;
             this.servicioUsuarios = servicioUsuarios;
             this.repositorioCuentas = repositorioCuentas;
+            this.repositorioTransacciones = repositorioTransacciones;
+            this.servicioReportes = servicioReportes;
         }
 
         public async Task<IActionResult> Index()
@@ -43,6 +49,23 @@ namespace ManejoPresupuesto.Controllers
                     Cuentas = grupo.AsEnumerable()
                 // Convierte el resultado a una lista
                 }).ToList();
+            return View(modelo);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Detalle(int id, int mes, int año)
+        {
+            var usuarioId = servicioUsuarios.ObtenerUsuarioId();
+            var cuenta = await repositorioCuentas.ObtenerPorId(id, usuarioId);
+            if (cuenta is null)
+            {
+                return RedirectToAction("NoEncontrado", "Home");
+            }
+            
+            ViewBag.Cuenta = cuenta.Nombre;
+            
+            var modelo = await servicioReportes.ObtenerReporteTransaccionesDetalladasPorCuenta(usuarioId, id, mes, año, ViewBag);
+
             return View(modelo);
         }
 

@@ -75,7 +75,7 @@
                                     <a asp-action="Borrar" asp-route-id="@cuenta.Id" class="btn btn-danger">
                                         <i class="bi-trash-fill"></i>
                                     </a>
-                                    <strong class="ps-2">@cuenta.Nombre</strong>
+                                    <strong class="ps-2"><a asp-action="Detalle" asp-route-id="@cuenta.Id">@cuenta.Nombre</a></strong>
                                 </span>
                                 <span class="@claseCuenta">@cuenta.Balance.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-MX"))</span>
                             </li>

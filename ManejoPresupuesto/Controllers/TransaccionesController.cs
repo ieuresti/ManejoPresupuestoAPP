@@ -4,6 +4,7 @@ using ManejoPresupuesto.Servicios;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Transactions;
 
 namespace ManejoPresupuesto.Controllers
@@ -14,6 +15,7 @@ namespace ManejoPresupuesto.Controllers
         private readonly IRepositorioCuentas repositorioCuentas;
         private readonly IRepositorioCategorias repositorioCategorias;
         private readonly IRepositorioTransacciones repositorioTransacciones;
+        private readonly IServicioReportes servicioReportes;
         private readonly IMapper mapper;
 
         public TransaccionesController(
@@ -21,16 +23,40 @@ namespace ManejoPresupuesto.Controllers
             IRepositorioCuentas repositorioCuentas,
             IRepositorioCategorias repositorioCategorias,
             IRepositorioTransacciones repositorioTransacciones,
+            IServicioReportes servicioReportes,
             IMapper mapper)
         {
             this.servicioUsuarios = servicioUsuarios;
             this.repositorioCuentas = repositorioCuentas;
             this.repositorioCategorias = repositorioCategorias;
             this.repositorioTransacciones = repositorioTransacciones;
+            this.servicioReportes = servicioReportes;
             this.mapper = mapper;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index(int mes, int año)
+        {
+            var usuarioId = servicioUsuarios.ObtenerUsuarioId();
+            var modelo = await servicioReportes.ObtenerReporteTransaccionesDetalladas(usuarioId, mes, año, ViewBag);
+            return View(modelo);
+        }
+
+        public IActionResult Semanal()
+        {
+            return View();
+        }
+
+        public IActionResult Mensual()
+        {
+            return View();
+        }
+
+        public IActionResult ExcelReporte()
+        {
+            return View();
+        }
+
+        public IActionResult Calendario()
         {
             return View();
         }
@@ -80,7 +106,7 @@ namespace ManejoPresupuesto.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Editar(int id)
+        public async Task<IActionResult> Editar(int id, string urlRetorno = null)
         {
             var usuarioId = servicioUsuarios.ObtenerUsuarioId();
             // Obtener la transaccion por id
@@ -101,6 +127,7 @@ namespace ManejoPresupuesto.Controllers
             modelo.CuentaAnteriorId = transaccion.CuentaId;
             modelo.Categorias = await ObtenerCategorias(usuarioId, transaccion.tipoOperacionId);
             modelo.Cuentas = await ObtenerCuentas(usuarioId);
+            modelo.urlRetorno = urlRetorno;
 
             return View(modelo);
         }
@@ -134,11 +161,18 @@ namespace ManejoPresupuesto.Controllers
                 modelo.Monto *= -1;
             }
             await repositorioTransacciones.Actualizar(transaccion, modelo.MontoAnterior, modelo.CuentaAnteriorId);
-            return RedirectToAction("Index");
+            if (string.IsNullOrEmpty(modelo.urlRetorno))
+            {
+                return RedirectToAction("Index");
+            } else
+            {
+                // Si viene una url de retorno, redirigir a esa url al finalizar la edicion
+                return LocalRedirect(modelo.urlRetorno);
+            }
         }
 
         [HttpPost]
-        public async Task<IActionResult> Borrar(int id)
+        public async Task<IActionResult> Borrar(int id, string urlRetorno = null)
         {
             var usuarioId = servicioUsuarios.ObtenerUsuarioId();
             var transaccion = await repositorioTransacciones.ObtenerPorId(id, usuarioId);
@@ -147,7 +181,14 @@ namespace ManejoPresupuesto.Controllers
                 return RedirectToAction("NoEncontrado", "Home");
             }
             await repositorioTransacciones.Borrar(id);
-            return RedirectToAction("Index");
+            if (string.IsNullOrEmpty(urlRetorno))
+            {
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                return LocalRedirect(urlRetorno);
+            }
         }
 
         private async Task<IEnumerable<SelectListItem>> ObtenerCuentas(int usuarioId)

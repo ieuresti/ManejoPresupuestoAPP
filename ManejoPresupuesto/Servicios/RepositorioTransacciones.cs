@@ -10,6 +10,8 @@ namespace ManejoPresupuesto.Servicios
         Task Crear(Transaccion transaccion);
         Task Actualizar(Transaccion transaccion, decimal montoAnterior, int cuentaAnterior);
         Task<Transaccion> ObtenerPorId(int id, int usuarioId);
+        Task<IEnumerable<Transaccion>> ObtenerPorCuentaId(ObtenerTransaccionesPorCuenta modelo);
+        Task<IEnumerable<Transaccion>> ObtenerPorUsuarioId(ParametroObtenerTransaccionesPorUsuario modelo);
         Task Borrar(int id);
     }
     public class RepositorioTransacciones: IRepositorioTransacciones
@@ -48,6 +50,41 @@ namespace ManejoPresupuesto.Servicios
                 INNER JOIN Categorias
                 ON Categorias.Id = Transacciones.CategoriaId
                 WHERE Transacciones.Id = @Id AND Transacciones.UsuarioId = @UsuarioId;", new { id, usuarioId }
+            );
+        }
+
+        public async Task<IEnumerable<Transaccion>> ObtenerPorCuentaId(ObtenerTransaccionesPorCuenta modelo)
+        {
+            using var connection = new SqlConnection(connectionString);
+            return await connection.QueryAsync<Transaccion>(
+                @"SELECT Transacciones.Id, Transacciones.Monto, Transacciones.FechaTransaccion,
+                Categorias.Nombre AS Categoria, Categorias.TipoOperacionId,
+                Cuentas.Nombre AS Cuenta
+                FROM Transacciones
+                INNER JOIN Categorias
+                ON Categorias.Id = Transacciones.CategoriaId
+                INNER JOIN Cuentas
+                ON Cuentas.Id = Transacciones.CuentaId
+                WHERE Transacciones.CuentaId = @CuentaId AND Transacciones.UsuarioId = @UsuarioId
+                AND FechaTransaccion BETWEEN @FechaInicio AND @FechaFin;", modelo
+            );
+        }
+
+        public async Task<IEnumerable<Transaccion>> ObtenerPorUsuarioId(ParametroObtenerTransaccionesPorUsuario modelo)
+        {
+            using var connection = new SqlConnection(connectionString);
+            return await connection.QueryAsync<Transaccion>(
+                @"SELECT Transacciones.Id, Transacciones.Monto, Transacciones.FechaTransaccion,
+                Categorias.Nombre AS Categoria, Categorias.TipoOperacionId,
+                Cuentas.Nombre AS Cuenta
+                FROM Transacciones
+                INNER JOIN Categorias
+                ON Categorias.Id = Transacciones.CategoriaId
+                INNER JOIN Cuentas
+                ON Cuentas.Id = Transacciones.CuentaId
+                WHERE Transacciones.UsuarioId = @UsuarioId
+                AND FechaTransaccion BETWEEN @FechaInicio AND @FechaFin
+                ORDER BY Transacciones.FechaTransaccion DESC;", modelo
             );
         }
 

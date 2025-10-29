@@ -1,5 +1,50 @@
-﻿@{
+﻿@model ReporteSemanalViewModel
+
+@{
     ViewData["Title"] = "Reporte Semanal";
+
+    var resumenMontos = new ResumenMontosViewModel()
+    {
+        Ingresos = Model.Ingresos,
+        Gastos = Model.Gastos,
+        Total = Model.Total
+    };
+
+    string FormatearFecha(DateTime fecha)
+    {
+        var strFecha = fecha.ToString("MMM dd");
+        return char.ToUpper(strFecha[0]) + strFecha.Substring(1).ToLower();
+    }
 }
 
 <partial name="_Submenu" Model="SubMenuTransacciones.Semanal"></partial>
+
+<partial name="_NavegarPorMeses" model="@Model.FechaReferencia"></partial>
+
+<partial name="_ResumenMontos" model="@resumenMontos"></partial>
+
+<table class="table table-striped" style="font-size: 20px">
+    <thead>
+        <tr>
+            <th>Semana</th>
+            <th style="text-align: right;">Ingresos</th>
+            <th style="text-align: right;">Gastos</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var transaccionesPorSemana in Model.TransaccionesPorSemana)
+        {
+            <tr>
+                <td>
+                    <a style="text-decoration: none" asp-action="Index"
+                        asp-route-año="@Model.FechaReferencia.Year" asp-route-mes="@Model.FechaReferencia.Month">
+                        @FormatearFecha(transaccionesPorSemana.FechaInicio) ~
+                        @FormatearFecha(transaccionesPorSemana.FechaFin)
+                    </a>
+                </td>
+                <td class="activo" style="text-align: right;">@transaccionesPorSemana.Ingresos</td>
+                <td class="pasivo" style="text-align: right;">@transaccionesPorSemana.Gastos</td>
+            </tr>
+        }
+    </tbody>
+</table>

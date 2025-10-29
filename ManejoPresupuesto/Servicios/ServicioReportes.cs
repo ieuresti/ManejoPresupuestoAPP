@@ -8,6 +8,7 @@ namespace ManejoPresupuesto.Servicios
             int mes, int año, dynamic ViewBag);
         Task<ReporteTransaccionesDetalladas> ObtenerReporteTransaccionesDetalladasPorCuenta(int usuarioId,
             int cuentaId, int mes, int año, dynamic ViewBag);
+        Task<IEnumerable<ResultadoObtenerPorSemana>> ObtenerReporteSemanal(int usuarioId, int mes, int año, dynamic ViewBag);
     }
     public class ServicioReportes: IServicioReportes
     {
@@ -91,6 +92,26 @@ namespace ManejoPresupuesto.Servicios
             // Guardar la url de retorno para regresar a la misma vista despues de editar una transaccion
             ViewBag.urlRetorno = httpContext.Request.Path + httpContext.Request.QueryString;
 
+            return modelo;
+        }
+
+        public async Task<IEnumerable<ResultadoObtenerPorSemana>> ObtenerReporteSemanal(int usuarioId, int mes, int año, dynamic ViewBag)
+        {
+            (DateTime fechaInicio, DateTime fechaFin) = ObtenerFechaInicioYFin(mes, año);
+
+            var parametro = new ParametroObtenerTransaccionesPorUsuario()
+            {
+                UsuarioId = usuarioId,
+                FechaInicio = fechaInicio,
+                FechaFin = fechaFin
+            };
+            ViewBag.mesAnterior = fechaInicio.AddMonths(-1).Month;
+            ViewBag.añoAnterior = fechaInicio.AddMonths(-1).Year;
+            ViewBag.mesPosterior = fechaInicio.AddMonths(1).Month;
+            ViewBag.añoPosterior = fechaInicio.AddMonths(1).Year;
+            // Guardar la url de retorno para regresar a la misma vista despues de editar una transaccion
+            ViewBag.urlRetorno = httpContext.Request.Path + httpContext.Request.QueryString;
+            var modelo = await repositorioTransacciones.ObtenerPorSemana(parametro);
             return modelo;
         }
 

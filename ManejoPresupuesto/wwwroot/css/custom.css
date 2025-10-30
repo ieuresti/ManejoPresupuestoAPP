@@ -1,3 +1,15 @@
 ﻿#reordenable tr {
     cursor: move;
 }
+
+.activo {
+    color: green !important;
+}
+
+.pasivo {
+    color: red !important;
+}
+
+.total {
+    color: blue;
+}

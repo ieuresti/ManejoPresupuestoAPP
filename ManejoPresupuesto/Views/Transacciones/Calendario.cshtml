@@ -3,3 +3,122 @@
 }
 
 <partial name="_Submenu" Model="SubMenuTransacciones.Calendario"></partial>
+
+<div id="calendario"></div>
+
+<div class="modal fade" id="modalTransacciones" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Transacciones del día</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th id="modalTablaFecha" colspan="2"></th>
+                            <th id="modalTablaIngresos" class="activo"></th>
+                            <th id="modalTablaGastos" class="pasivo"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalTablaCuerpo">
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/fullcalendar/main.min.js"></script>
+
+    <script>
+        // Espera a que el DOM esté cargado para inicializar el calendario
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendario');
+            // Crear instancia de FullCalendar y configurar opciones básicas
+            var calendario = new FullCalendar.Calendar(calendarEl, {
+                dayMaxEventRows: 3, // mostrar máximo 3 filas de eventos por día
+                initialView: 'dayGridMonth',
+                // 'events' apunta a un endpoint que devuelve los eventos en formato que FullCalendar entiende
+                events: '/transacciones/ObtenerTransaccionesCalendario',
+                // Al hacer click en una fecha llamamos a la función que obtiene las transacciones de ese día
+                dateClick: async function(info) {
+                    await buscarTransaccionesPorFecha(info.dateStr);
+                }
+            });
+            // Renderiza el calendario en la página
+            calendario.render();
+        });
+
+        // Función que solicita al backend las transacciones de una fecha y muestra un modal con los detalles
+        async function buscarTransaccionesPorFecha(fecha) {
+            try {
+                // Llamada GET al endpoint que devuelve las transacciones en JSON
+                // Usamos encodeURIComponent para evitar problemas con caracteres especiales en la fecha
+                const url = `/transacciones/ObtenerTransaccionesPorFecha?fecha=${encodeURIComponent(fecha)}`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                // Verificar que la respuesta sea exitosa antes de parsear
+                if (!response.ok) {
+                    console.error('Error en la petición:', response.status, response.statusText);
+                    return;
+                }
+
+                const json = await response.json(); // array de transacciones esperadas
+
+                // Inicializar acumuladores para totales
+                let ingresos = 0;
+                let gastos = 0;
+                // Constante que representa el id de tipo operación para ingresos
+                const tipoOperacionesIngresos = 1;
+
+                // Formateador de moneda — ajusta locale/currency si lo necesitas (ej. 'es-MX' / 'MXN')
+                const formateador = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD'
+                });
+
+                // Generar array de filas HTML a partir del JSON
+                const filas = json.map(transaccion => {
+                    // Sumar al acumulador correspondiente según el tipo de operación
+                    if (transaccion.tipoOperacionId === tipoOperacionesIngresos) {
+                        ingresos += transaccion.monto;
+                    } else {
+                        gastos += transaccion.monto;
+                    }
+
+                    return `<tr>
+                        <td>${transaccion.categoria}</td>
+                        <td>${transaccion.cuenta}</td>
+                        <td align="right" colspan="2" class="${transaccion.tipoOperacionId === tipoOperacionesIngresos ? 'activo' : 'pasivo'}">
+                            ${formateador.format(transaccion.monto)}
+                        </td>
+                    </tr>`;
+                }).join(''); // .join('') evita que el array se convierta en una cadena con comas
+
+                // Insertar las filas y totales en el modal
+                $("#modalTablaCuerpo").html(filas);
+                $("#modalTablaIngresos").html(formateador.format(ingresos));
+                $("#modalTablaGastos").html(formateador.format(gastos));
+                $("#modalTablaFecha").html(fecha);
+
+                // Crear y mostrar el modal de Bootstrap con las transacciones del día
+                const modalTransacciones = new bootstrap.Modal(document.getElementById('modalTransacciones'));
+                modalTransacciones.show();
+            } catch (error) {
+                // Manejo de errores de red o parsing
+                console.error('Error al obtener transacciones por fecha:', error);
+            }
+        }
+    </script>
+}

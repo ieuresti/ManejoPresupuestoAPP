@@ -7,7 +7,8 @@ namespace ManejoPresupuesto.Servicios
     public interface  IRepositorioCategorias
     {
         Task Crear(Categoria categoria);
-        Task<IEnumerable<Categoria>> Obtener(int usuarioId);
+        Task<IEnumerable<Categoria>> Obtener(int usuarioId, PaginacionViewModel paginacion);
+        Task<int> Contar(int usuarioId);
         Task<Categoria> ObtenerPorId(int id, int usuarioId);
         Task<IEnumerable<Categoria>> ObtenerPorTipoOperacion(int usuarioId, TipoOperacion tipoOperacionId);
         Task Actualizar(Categoria categoria);
@@ -32,13 +33,34 @@ namespace ManejoPresupuesto.Servicios
             categoria.Id = id;
         }
 
-        public async Task<IEnumerable<Categoria>> Obtener(int usuarioId)
+        public async Task<IEnumerable<Categoria>> Obtener(int usuarioId, PaginacionViewModel paginacion)
+        {
+            // Usamos parametros para evitar interpolación directa en la consulta.
+            using var connection = new SqlConnection(connectionString);
+            // OFFSET y FETCH requieren ORDER BY para que la paginación sea consistente.
+            // OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY se parametriza para mayor seguridad.
+            var sql = @"
+                SELECT *
+                FROM Categorias
+                WHERE UsuarioId = @UsuarioId
+                ORDER BY Nombre
+                OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY;";
+
+            var parametros = new
+            {
+                UsuarioId = usuarioId,
+                Skip = paginacion.RecordsASaltar,
+                Take = paginacion.RecordsPorPagina
+            };
+
+            return await connection.QueryAsync<Categoria>(sql, parametros);
+        }
+
+        public async Task<int> Contar(int usuarioId)
         {
             using var connection = new SqlConnection(connectionString);
-            return await connection.QueryAsync<Categoria>(
-                @"SELECT *
-                FROM Categorias
-                WHERE UsuarioId = @UsuarioId", new { usuarioId }
+            return await connection.ExecuteScalarAsync<int>(
+                "SELECT COUNT(*) FROM Categorias WHERE UsuarioId = @usuarioId;", new { usuarioId }
             );
         }
 

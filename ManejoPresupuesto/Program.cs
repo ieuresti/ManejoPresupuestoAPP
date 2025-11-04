@@ -31,7 +31,9 @@ builder.Services.AddIdentityCore<Usuario>(opciones =>
     opciones.Password.RequireLowercase = false;
     opciones.Password.RequireUppercase = false;
     opciones.Password.RequireNonAlphanumeric = false;
-}).AddErrorDescriber<MensajesDeErrorIdentity>();
+}).AddErrorDescriber<MensajesDeErrorIdentity>()
+.AddDefaultTokenProviders();
+
 // Configuracion para que la app entienda el uso de cookies para autenticacion
 builder.Services.AddAuthentication(options =>
 {
@@ -42,6 +44,8 @@ builder.Services.AddAuthentication(options =>
 {
     opciones.LoginPath = "/usuarios/login";
 });
+
+builder.Services.AddTransient<IServicioEmail, ServicioEmail>();
 
 var app = builder.Build();
 

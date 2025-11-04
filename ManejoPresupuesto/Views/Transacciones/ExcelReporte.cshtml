@@ -11,34 +11,67 @@
 
 <partial name="_Submenu" Model="SubMenuTransacciones.ExcelReporte"></partial>
 
-<h1>Exportar Transacciones a Excel</h1>
+<h1 class="mb-3">Exportar Transacciones a Excel</h1>
 
-<div class="mb-3">
-    <a asp-action="ExportarExcelPorMes" asp-route-mes="@mesActual" asp-route-año="@añoActual" class="btn btn-success">
-        Exportar mes actual
-    </a> ~ @hoy.ToString("MMMM yyyy")
-</div>
-
-<div class="mb-3">
-    <a asp-action="ExportarExcelPorMes" asp-route-mes="@mesAnterior" asp-route-año="@mesAnteriorAño" class="btn btn-success">
-        Exportar mes anterior
-    </a> ~ @haceUnMes.ToString("MMMM yyyy")
-</div>
-
-<div class="mb-3">
-    <a asp-action="ExportarExcelPorAño" asp-route-año="@añoActual" class="btn btn-success">
-        Exportar año actual
-    </a> ~ @añoActual
-</div>
-
-<div class="mb-3">
-    <a asp-action="ExportarExcelPorAño" asp-route-año="@añoAnterior" class="btn btn-success">
-        Exportar año anterior
-    </a> ~ @añoAnterior
-</div>
-
-<div class="mb-3">
-    <a asp-action="ExportarExcelTodo" class="btn btn-success">
-        Exportar todo
-    </a>
+<div class="row">
+    <div class="col-sm-6 mb-3">
+        <div class="card">
+            <div class="text-center"><img src="~/img/reporte.jpg" class="img-reporte" alt="reporte-img"></div>
+            <div class="card-body">
+                <h5 class="card-title">Mes actual</h5>
+                <p class="card-text">Descargar reporte de transacciones realizadas durante el mes actual (@hoy.ToString("MMMM yyyy")).</p>
+                <a asp-action="ExportarExcelPorMes" asp-route-mes="@mesActual" asp-route-año="@añoActual" class="btn btn-success">
+                    Exportar
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 mb-3">
+        <div class="card">
+            <div class="text-center"><img src="~/img/reporte.jpg" class="img-reporte" alt="reporte-img"></div>
+            <div class="card-body">
+                <h5 class="card-title">Mes anterior</h5>
+                <p class="card-text">Descargar reporte de transacciones realizadas durante el mes anterior (@haceUnMes.ToString("MMMM yyyy")).</p>
+                <a asp-action="ExportarExcelPorMes" asp-route-mes="@mesAnterior" asp-route-año="@mesAnteriorAño" class="btn btn-success">
+                    Exportar
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 mb-3">
+        <div class="card">
+            <div class="text-center"><img src="~/img/reporte.jpg" class="img-reporte" alt="reporte-img"></div>
+            <div class="card-body">
+                <h5 class="card-title">Año actual</h5>
+                <p class="card-text">Descargar reporte de transacciones realizadas durante el año actual (@añoActual).</p>
+                <a asp-action="ExportarExcelPorAño" asp-route-año="@añoActual" class="btn btn-success">
+                    Exportar
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 mb-3">
+        <div class="card">
+            <div class="text-center"><img src="~/img/reporte.jpg" class="img-reporte" alt="reporte-img"></div>
+            <div class="card-body">
+                <h5 class="card-title">Año anterior</h5>
+                <p class="card-text">Descargar reporte de transacciones realizadas durante el año anterior (@añoAnterior).</p>
+                <a asp-action="ExportarExcelPorAño" asp-route-año="@añoAnterior" class="btn btn-success">
+                    Exportar
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 mb-3">
+        <div class="card">
+            <div class="text-center"><img src="~/img/reporte.jpg" class="img-reporte" alt="reporte-img"></div>
+            <div class="card-body">
+                <h5 class="card-title">Todas</h5>
+                <p class="card-text">Descargar reporte de todas las transacciones realizadas desde la creación del usuario.</p>
+                <a asp-action="ExportarExcelTodo" class="btn btn-success">
+                    Exportar
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
